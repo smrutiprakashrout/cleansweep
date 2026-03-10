@@ -191,8 +191,10 @@ class _MainScreenState extends State<MainScreen> {
           final ext = p.extension(entity.path).toLowerCase();
           String? categoryFolder;
 
-          if (['.jpg', '.png', '.jpeg', '.gif', '.svg' ,'.avif', '.webp', '.heic','.ico','.ai','.icns'].contains(ext)) {
+          if (['.jpg', '.png', '.jpeg', '.gif', '.svg' ,'.avif', '.webp', '.heic'].contains(ext)) {
             categoryFolder = 'Images';
+          } else if (['.ico','.ai','.icns'].contains(ext)) {
+            categoryFolder = 'VectorArt';
           } else if (['.mp4', '.mkv', '.mov', '.avi','.webm'].contains(ext)) {
             categoryFolder = 'Videos';
           } else if (['.pdf', '.docx', '.txt', '.xlsx','.xls','.doc'].contains(ext)) {
@@ -203,6 +205,10 @@ class _MainScreenState extends State<MainScreen> {
             categoryFolder = 'Package';
           }else if (['.mp3'].contains(ext)) {
             categoryFolder = 'audio';
+          }else if (['.iso'].contains(ext)) {
+            categoryFolder = 'IsoFiles';
+          }else {
+            categoryFolder = 'Others';
           }
 
           if (categoryFolder != null) {
@@ -398,7 +404,7 @@ class _MainScreenState extends State<MainScreen> {
                   borderRadius: BorderRadius.circular(24),
                 ),
                 child: const Text(
-                  "⣾ K/← Keep  ·  D/→ Delete",
+                  "⣾ K/← Keep · L/→ Delete",
                   style: TextStyle(color: Colors.white54, fontSize: 12, letterSpacing: 0.5),
                 ),
               ),
