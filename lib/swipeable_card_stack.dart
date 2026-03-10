@@ -243,6 +243,7 @@ class SwipeableCardStackState extends State<SwipeableCardStack>
                     key: ValueKey(widget.files[1].documentUri?.toString() ?? widget.files[1].path),
                     file: widget.files[1],
                     overlayBuilder: null, // No overlay for bg card
+                    isCurrent: false,
                   ),
                 ),
               ),
@@ -262,6 +263,7 @@ class SwipeableCardStackState extends State<SwipeableCardStack>
                 child: FileCard(
                   key: ValueKey(widget.files.first.documentUri?.toString() ?? widget.files.first.path),
                   file: widget.files.first,
+                  isCurrent: true,
                   // Render gradient overlay on the foreground card
                   overlayBuilder: (context) {
                     final double greenOpacity =

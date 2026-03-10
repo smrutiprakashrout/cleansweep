@@ -11,11 +11,13 @@ import 'models.dart';
 class FileCard extends StatelessWidget {
   final CategorizedFile file;
   final WidgetBuilder? overlayBuilder;
+  final bool isCurrent;
 
   const FileCard({
     Key? key,
     required this.file,
     this.overlayBuilder,
+    this.isCurrent = false,
   }) : super(key: key);
 
   @override
@@ -60,7 +62,7 @@ class FileCard extends StatelessWidget {
           children: [
             // Preview Image / Backdrop
             Positioned.fill(
-              child: FilePreviewWidget(file: file),
+              child: FilePreviewWidget(file: file, isCurrent: isCurrent),
             ),
             
             // Dynamic Overlay (if provided)
@@ -139,7 +141,9 @@ class FileCard extends StatelessWidget {
 
 class FilePreviewWidget extends StatefulWidget {
   final CategorizedFile file;
-  const FilePreviewWidget({Key? key, required this.file}) : super(key: key);
+  final bool isCurrent;
+
+  const FilePreviewWidget({Key? key, required this.file, this.isCurrent = false}) : super(key: key);
 
   @override
   State<FilePreviewWidget> createState() => _FilePreviewWidgetState();
@@ -175,6 +179,14 @@ class _FilePreviewWidgetState extends State<FilePreviewWidget> {
       _pdfDocument = null;
       _pdfImage = null;
       _loadPreview();
+    } else if (oldWidget.isCurrent != widget.isCurrent && _player != null) {
+      if (widget.isCurrent) {
+        _player!.setVolume(100.0);
+        _player!.play();
+      } else {
+        _player!.setVolume(0.0);
+        _player!.pause();
+      }
     }
   }
 
@@ -192,10 +204,15 @@ class _FilePreviewWidgetState extends State<FilePreviewWidget> {
         _player = Player();
         _videoController = VideoController(_player!);
         await _player!.setPlaylistMode(PlaylistMode.loop);
+        
+        if (!widget.isCurrent) {
+          await _player!.setVolume(0.0);
+        }
+
         if (Platform.isAndroid && file.documentUri != null) {
-          await _player!.open(Media(file.documentUri!.toString()), play: true);
+          await _player!.open(Media(file.documentUri!.toString()), play: widget.isCurrent);
         } else {
-          await _player!.open(Media('file://${file.path}'), play: true);
+          await _player!.open(Media('file://${file.path}'), play: widget.isCurrent);
         }
         if (mounted) setState(() => _isLoading = false);
       } else if (file.category == FileCategory.document && file.extension == '.pdf') {
