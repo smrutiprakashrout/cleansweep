@@ -6,7 +6,9 @@ import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 import 'package:pdfx/pdfx.dart';
 import 'package:shared_storage/shared_storage.dart' as saf;
+import 'package:flutter_avif/flutter_avif.dart';
 import 'models.dart';
+import 'heic_decoder.dart';
 
 class FileCard extends StatelessWidget {
   final CategorizedFile file;
@@ -238,9 +240,19 @@ class _FilePreviewWidgetState extends State<FilePreviewWidget> {
   void dispose() {
     if (widget.file.category == FileCategory.image) {
       if (_bytes != null) {
-        MemoryImage(_bytes!).evict();
+        if (widget.file.extension == '.avif') {
+          // AVIF cache manages itself via the C++ bindings and global image cache clearing
+        } else {
+          ResizeImage(MemoryImage(_bytes!), width: 1080).evict();
+          MemoryImage(_bytes!).evict();
+        }
       } else {
-        FileImage(File(widget.file.path)).evict();
+        if (widget.file.extension == '.avif') {
+          // Similar logic for AVIF files
+        } else {
+          ResizeImage(FileImage(File(widget.file.path)), width: 1080).evict();
+          FileImage(File(widget.file.path)).evict();
+        }
       }
     }
     _player?.dispose();
@@ -262,7 +274,9 @@ class _FilePreviewWidgetState extends State<FilePreviewWidget> {
 
     if (!_hasError) {
       if (file.category == FileCategory.image) {
-        if (_bytes != null) {
+        if (file.extension.toLowerCase() == '.heic') {
+          previewContent = HeicDecoder.buildPreview(file.path);
+        } else if (_bytes != null) {
           final uniqueKey = ValueKey(file.documentUri?.toString() ?? file.path);
           if (file.extension == '.svg') {
             previewContent = SvgPicture.memory(
@@ -272,9 +286,17 @@ class _FilePreviewWidgetState extends State<FilePreviewWidget> {
               width: double.infinity,
               height: double.infinity,
             );
-          } else {
-            previewContent = Image.memory(
+          } else if (file.extension == '.avif') {
+            previewContent = AvifImage.memory(
               _bytes!,
+              key: uniqueKey,
+              fit: BoxFit.cover,
+              width: double.infinity,
+              height: double.infinity,
+            );
+          } else {
+            previewContent = Image(
+              image: ResizeImage(MemoryImage(_bytes!), width: 1080),
               key: uniqueKey,
               fit: BoxFit.cover,
               width: double.infinity,
@@ -292,9 +314,17 @@ class _FilePreviewWidgetState extends State<FilePreviewWidget> {
               width: double.infinity,
               height: double.infinity,
             );
-          } else {
-            previewContent = Image.file(
+          } else if (file.extension == '.avif') {
+            previewContent = AvifImage.file(
               File(file.path),
+              key: uniqueKey,
+              fit: BoxFit.cover,
+              width: double.infinity,
+              height: double.infinity,
+            );
+          } else {
+            previewContent = Image(
+              image: ResizeImage(FileImage(File(file.path)), width: 1080),
               key: uniqueKey,
               fit: BoxFit.cover,
               width: double.infinity,

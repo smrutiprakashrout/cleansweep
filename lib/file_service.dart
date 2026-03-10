@@ -127,7 +127,7 @@ class FileService extends ChangeNotifier {
     final ext = p.extension(sanitizedName).toLowerCase();
     FileCategory category = FileCategory.other;
 
-    if (['.jpg', '.jpeg', '.png', '.webp', '.svg'].contains(ext)) {
+    if (['.jpg', '.jpeg', '.png', '.webp', '.svg', '.heic', '.gif', '.avif'].contains(ext)) {
       category = FileCategory.image;
     } else if (['.mp4', '.mkv', '.mov', '.avi'].contains(ext)) {
       category = FileCategory.video;
